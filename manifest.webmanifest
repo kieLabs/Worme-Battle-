@@ -1,0 +1,16 @@
+{
+  "id": "./",
+  "name": "WORMS BATTLE – GamerKie",
+  "short_name": "Worms Battle",
+  "description": "Eat, grow, survive and dominate the GamerKie worm arena.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#103c34",
+  "theme_color": "#133b34",
+  "icons": [
+    { "src": "./assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "./assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

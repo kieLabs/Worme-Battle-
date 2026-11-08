@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#133b34">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
+  <meta name="description" content="WORMS BATTLE by GamerKie. Eat, grow, survive and dominate the arena!">
+  <title>WORMS BATTLE – GamerKie</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app">
+    <canvas id="game-canvas" aria-label="Worms Battle game arena"></canvas>
+
+    <section id="menu-screen" class="screen active">
+      <header class="brandbar"><div class="brand-mark">G</div><div><b>GAMERKIE</b><small>ARCADE UNIVERSE</small></div><button class="icon-button sound-toggle" id="menu-sound" aria-label="Toggle sound">🔊</button></header>
+      <div class="menu-content">
+        <div class="hero-copy"><div class="eyebrow">THE ULTIMATE WORM ARENA</div><h1>WORMS <span>BATTLE</span></h1><p>Eat. Grow. Survive. Dominate!</p><div class="hero-worm" aria-hidden="true"><span>🪱</span><i>✨</i><i>🍓</i><i>⭐</i></div></div>
+        <div class="menu-card">
+          <div class="profile-strip"><div class="avatar">🐛</div><div class="profile-name"><b id="menu-username">Player</b><small><span id="menu-level">LEVEL 1</span> · <span id="menu-coins">250</span> 🪙</small></div><div class="profile-actions"><button class="install-app-button" id="install-app-button" type="button" disabled>⬇ INSTALL APP</button><button class="mini-link" data-view="profile">PROFILE ↗</button></div></div>
+          <button class="play-button" id="play-button"><span>▶</span> PLAY NOW</button>
+          <div class="menu-grid">
+            <button class="menu-tile" data-view="modes"><b>⚔️</b><span>GAME MODES</span></button>
+            <button class="menu-tile" data-view="wardrobe"><b>🎨</b><span>WARDROBE</span></button>
+            <button class="menu-tile" data-view="shop"><b>🛍️</b><span>SHOP</span></button>
+            <button class="menu-tile" data-view="workshop"><b>🛠️</b><span>WORKSHOP</span></button>
+            <button class="menu-tile" data-view="missions"><b>🎯</b><span>MISSIONS</span></button>
+            <button class="menu-tile" data-view="daily"><b>🎁</b><span>DAILY REWARD</span></button>
+            <button class="menu-tile" data-view="achievements"><b>🏅</b><span>ACHIEVEMENTS</span></button>
+            <button class="menu-tile" data-view="leaderboard"><b>🏆</b><span>LEADERBOARD</span></button>
+          </div>
+          <div class="menu-footer"><span>OFFLINE ARENA · AI RIVALS</span><button data-view="settings">⚙ SETTINGS</button></div>
+        </div>
+      </div>
+      <footer class="site-footer">© 2026 GamerKie · Original arcade experience</footer>
+    </section>
+
+    <section id="game-hud" class="game-hud hidden">
+      <div class="hud-left-column">
+        <div class="minimap-card glass"><div class="minimap-title">🗺 ARENA MAP</div><canvas id="mini-map" width="160" height="112" aria-label="Arena minimap"></canvas></div>
+        <div class="hud-player-card glass">
+          <div class="hud-score-label">YOUR SCORE</div><strong id="hud-score">0</strong>
+          <div class="hud-stats"><span>🐛 <b id="hud-length">12</b></span><span>🏆 #<b id="hud-rank">1</b></span><span>⏱ <b id="hud-time">00:00</b></span></div>
+          <div class="hud-coins">🪙 <b id="hud-coins">0</b> <span>·</span> 💎 <b id="hud-gems">0</b></div>
+          <button id="pause-button" class="pause-button" aria-label="Pause game">Ⅱ</button>
+        </div>
+      </div>
+      <div id="live-leaderboard" class="live-leaderboard glass" aria-label="Live player scores">
+        <div class="hud-leader-title">LIVE SCORES <span id="live-player-count">0</span></div>
+        <div id="live-score-list" class="live-score-list"></div>
+      </div>
+      <div id="powerup-hud" class="powerup-hud" aria-live="polite" aria-label="Active power-up countdowns"></div>
+      <div id="touch-stick" class="touch-stick hidden" aria-hidden="true"><div class="touch-stick-ring"><div class="touch-stick-knob"></div></div></div>
+      <div id="notice" class="notice"></div>
+    </section>
+
+    <section id="panel-screen" class="panel-screen hidden" aria-modal="true" role="dialog">
+      <div class="panel-card"><header class="panel-header"><div><small>GAMERKIE · WORMS BATTLE</small><h2 id="panel-title">GAME MODES</h2></div><button id="panel-close" class="close-button" aria-label="Close">✕</button></header><div id="panel-content" class="panel-content"></div></div>
+    </section>
+
+    <section id="pause-screen" class="modal-screen hidden"><div class="modal-card"><div class="modal-icon">⏸️</div><h2>GAME PAUSED</h2><p>Take a breath. The arena is waiting.</p><button id="resume-button" class="play-button">▶ RESUME</button><button id="quit-button" class="secondary-button">QUIT TO MENU</button></div></section>
+    <section id="gameover-screen" class="modal-screen hidden"><div class="modal-card gameover-card"><div class="gameover-content"><div class="modal-icon">💥</div><div class="eyebrow">MATCH COMPLETE</div><h2 id="gameover-title">WORM DOWN!</h2><p id="gameover-subtitle">Your arena run has ended.</p><div id="gameover-stats" class="result-grid"></div></div><div class="gameover-actions"><button id="continue-ad-button" class="continue-ad-button hidden">▶ CONTINUE · WATCH AD</button><button id="restart-button" class="play-button">↻ PLAY AGAIN</button><button id="gameover-menu" class="secondary-button">MAIN MENU</button></div></div></section>
+
+    <div id="rotate-overlay" class="rotate-overlay hidden"><div class="rotate-card"><div class="rotate-icon">📱↻</div><b>ROTATE YOUR DEVICE</b><span>WORMS BATTLE is best played in landscape mode.</span><button id="rotate-continue" class="play-button">CONTINUE</button></div></div>
+    <div id="mobile-toast" class="mobile-toast" aria-live="polite"></div>
+  </main>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
