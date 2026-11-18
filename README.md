@@ -51,7 +51,7 @@ Profile data is saved to browser `localStorage` on the device and browser where 
 
 ## Tests
 
-The project includes 37 fast unit tests for core geometry, collisions, growth, weighted food selection, AI steering, power-up timers, particles, shop purchases and save data.
+The project includes 48 fast unit tests for core geometry, collisions, growth, weighted food selection, AI steering, power-up timers, particles, shop purchases and save data.
 
 ```bash
 npm test
@@ -160,7 +160,8 @@ Wardrobe, GamerKie Shop and Workshop colour palettes are rendered as visual swat
 
 
 ## Enemy AI collision and name-label update
-- AI worms no longer die from intersecting their own trail.
-- AI worms are eliminated by rival body collisions or touching the arena's outer wall.
-- Enemy gamer-name labels are rendered at all camera zoom levels.
-- Run `npm test` to verify the collision and label regression tests.
+- AI worms ignore their own trail even when a wrapper/snapshot shares the same stable worm ID; self-overlap is never a lethal collision.
+- AI worms are eliminated only by hitting another worm's body or reaching the arena wall. Rival checks are resolved pair-by-pair in both directions to avoid order-dependent collision results.
+- Enemy nameplates display readable human first names (for example Alex, Sophia and Ethan) above each AI worm at all camera zoom levels. Names remain unique after the catalog is exhausted.
+- Player and AI worms both visibly grow thicker and longer as they eat. The original economy remains at 0.01 mass per food-value point; each collected food also contributes a small visual growth increment.
+- Run `npm test` to verify the collision, nameplate and food-growth regression tests.
