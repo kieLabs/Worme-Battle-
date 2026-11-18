@@ -1,5 +1,9 @@
 export function createFood(x, y, type, phase = Math.random() * Math.PI * 2) {
-  return { x, y, r: type.value > 35 ? 12 : 7 + Math.min(5, type.value / 12), type, phase };
+  // Small energy orbs intentionally roll between +1 and +5 score points.
+  const actualType = type?.name === 'Energy Orb'
+    ? { ...type, value: 1 + Math.floor(Math.random() * 5) }
+    : type;
+  return { x, y, r: actualType.value > 35 ? 12 : 7 + Math.min(5, actualType.value / 12), type: actualType, phase };
 }
 export function getWormMouthPoint(worm) {
   const offset = Math.max(8, (worm.r || 12) * .9);
