@@ -4,11 +4,10 @@ import { readFile } from 'node:fs/promises';
 
 const root = new URL('../', import.meta.url);
 
-test('home screen exposes an install action beside the profile control', async () => {
+test('home screen does not expose an install button', async () => {
   const html = await readFile(new URL('index.html', root), 'utf8');
-  assert.match(html, /id="install-app-button"/);
+  assert.doesNotMatch(html, /install-app-button|INSTALL APP/i);
   assert.match(html, /data-view="profile"/);
-  assert.ok(html.indexOf('id="install-app-button"') < html.indexOf('data-view="profile"'));
 });
 
 test('PWA manifest has standalone display, relative scope and both required icon sizes', async () => {
@@ -27,12 +26,9 @@ test('service worker precaches the game shell for offline launches', async () =>
 });
 
 
-test('install button invokes the native browser prompt without displaying manual-install instructions', async () => {
+test('game scripts contain no install-button or iframe-redirect behavior', async () => {
   const main = await readFile(new URL('js/main.js', root), 'utf8');
-  assert.match(main, /pendingInstallPrompt/);
-  assert.match(main, /promptEvent\.prompt\(\)/);
-  assert.match(main, /isEmbeddedGame\(\)/);
-  assert.doesNotMatch(main, /Open Chrome|Tap Share|Add to Home Screen|Install app.*menu/);
+  assert.doesNotMatch(main, /install-app-button|beforeinstallprompt|appinstalled|isEmbeddedGame|window\.open/);
 });
 
 test('colour values are used as visual swatch styles, not visible text in wardrobe/shop cards', async () => {
