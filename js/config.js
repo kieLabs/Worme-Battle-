@@ -41,7 +41,7 @@ export const MODES = [
   {id:'giant',name:'Giant Worm',icon:'🐉',desc:'Start huge and face tougher rivals.'},
   {id:'survival',name:'Survival Challenge',icon:'🔥',desc:'Danger rises as the match continues.'}
 ];
-export const BOT_NAMES = ['NoodleKing','Wiggle','TurboTail','JellyBean','CobraKai','MangoRush','PixelWorm','SirSlither','LimeLoop','VenomVibe','Twisty','Boba','Rocket','Sizzle','Mochi','Comet','Tango','Pickle','ZigZag','Nova','Chomper','Waffle','Blinky','Sushi','Sprout','Blizzard','Fuzzy','Orbit','Doodle','Taffy','Rumble','Kiwi','Puff','Jinx','Nacho','Pebble','Zesty','Muffin','Clover','Echo'];
+export const BOT_NAMES = ['Alex','Sophia','Ethan','Olivia','Liam','Emma','Noah','Ava','Lucas','Mia','Mason','Isabella','Leo','Amelia','James','Harper','Benjamin','Evelyn','Elijah','Charlotte','Henry','Abigail','Daniel','Emily','Jack','Ella','Logan','Scarlett','Aiden','Grace','Matthew','Chloe','Owen','Lily','Samuel','Aria','Sebastian','Nora','David','Zoe','Joseph','Layla','Wyatt','Riley','Julian','Hannah','Gabriel','Lucy','Isaac','Stella','Caleb','Maya','Nathan','Ellie','Ryan','Sofia','Aaron','Leah','Dylan','Aurora'];
 export const THEMES = [
   {id:'meadow',name:'Meadow',bg:'#92c96b',grid:'#a8d980',price:0},
   {id:'ocean',name:'Ocean Floor',bg:'#469eaa',grid:'#62b5bd',price:450},

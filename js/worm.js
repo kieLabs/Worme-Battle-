@@ -2,15 +2,15 @@ import { segmentsForMass, clamp, angleLerp, wormRadiusForMass } from './logic.js
 
 export function createWorm({x,y,angle=0,name='Worm',skin,player=false,mass=40,ai=0}) {
   const worm = {id:Math.random().toString(36).slice(2),x,y,angle,targetAngle:angle,name,skin,player,mass,ai,
-    speed:player?150:108+Math.random()*24,baseSpeed:player?150:108+Math.random()*24,r:wormRadiusForMass(mass),alive:true,boosting:false,
+    speed:player?150:108+Math.random()*24,baseSpeed:player?150:108+Math.random()*24,r:wormRadiusForMass(mass,0),alive:true,boosting:false,
     trail:[],trailDistance:0,score:Math.round(mass*2),coins:0,kills:0,food:0,created:performance.now(),respawnAt:0,
     powerups:{},shieldHits:0,think:0,personality:Math.random(),lastDrop:0,spawnProtectedUntil:0};
-  for(let i=0;i<Math.max(30,segmentsForMass(mass)*6);i++) worm.trail.push({x:x-Math.cos(angle)*i*2.2,y:y-Math.sin(angle)*i*2.2});
+  for(let i=0;i<Math.max(30,segmentsForMass(mass,0)*6);i++) worm.trail.push({x:x-Math.cos(angle)*i*2.2,y:y-Math.sin(angle)*i*2.2});
   return worm;
 }
 export function updateWormTrail(worm, dt, targetAngle, world, boost=false) {
   // Keep collision radius synchronized with growth for both the player and AI worms.
-  worm.r = wormRadiusForMass(worm.mass);
+  worm.r = wormRadiusForMass(worm.mass, worm.food || 0);
   const turn = clamp(dt*4.3,0,1);
   worm.angle = angleLerp(worm.angle,targetAngle,turn);
   const activeSpeed = worm.baseSpeed * (boost?1.75:1) * (worm.powerups.speed?1.45:1) * (worm.powerups.super?2.05:1);
@@ -21,12 +21,12 @@ export function updateWormTrail(worm, dt, targetAngle, world, boost=false) {
   worm.x = clamp(worm.x, 24, world.width-24);
   worm.y = clamp(worm.y, 24, world.height-24);
   worm.trail.unshift({x:worm.x,y:worm.y});
-  const desired = segmentsForMass(worm.mass);
+  const desired = segmentsForMass(worm.mass, worm.food || 0);
   const keep = Math.max(40, desired*5+20);
   if(worm.trail.length>keep) worm.trail.length=keep;
 }
 export function bodyPoints(worm) {
-  const count = segmentsForMass(worm.mass);
+  const count = segmentsForMass(worm.mass, worm.food || 0);
   const points=[];
   for(let i=count-1;i>=1;i--) {
     const p=worm.trail[Math.min(worm.trail.length-1,Math.round(i*5))];
@@ -43,7 +43,7 @@ function skinColor(skin, index, count, time) {
   return index%5===0?skin.b:skin.a;
 }
 export function drawWorm(ctx,worm,skin,time,zoom=1) {
-  const count=segmentsForMass(worm.mass), spacing=5, radius=worm.r=wormRadiusForMass(worm.mass);
+  const count=segmentsForMass(worm.mass, worm.food || 0), spacing=5, radius=worm.r=wormRadiusForMass(worm.mass, worm.food || 0);
   const points=[];
   for(let i=count-1;i>=0;i--) points.push(worm.trail[Math.min(worm.trail.length-1,Math.round(i*spacing))]||{x:worm.x,y:worm.y});
   ctx.save();
@@ -68,7 +68,15 @@ export function drawWorm(ctx,worm,skin,time,zoom=1) {
   ctx.beginPath();ctx.arc(10,0,2.8,.15,Math.PI-.15);ctx.strokeStyle='#653d44';ctx.lineWidth=1.5;ctx.stroke();
   ctx.restore();
   if(worm.name) {
-    ctx.save();ctx.font=`bold ${worm.player?13:11}px system-ui`;ctx.textAlign='center';ctx.fillStyle='rgba(25,44,35,.8)';const label=String(worm.name).replace(/[<>]/g,'').slice(0,18);
-    ctx.fillText(label,worm.x+1,worm.y-radius-12+1);ctx.fillStyle='#fff';ctx.fillText(label,worm.x,worm.y-radius-13);ctx.restore();
+    ctx.save();
+    const label=String(worm.name).replace(/[<>]/g,'').slice(0,18);
+    ctx.font=`800 ${worm.player?13:12}px system-ui`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    const labelWidth=ctx.measureText(label).width+14;
+    const labelY=worm.y-radius-23;
+    ctx.fillStyle=worm.player?'rgba(15,82,54,.88)':'rgba(20,35,44,.78)';
+    ctx.beginPath();ctx.roundRect(worm.x-labelWidth/2,labelY-9,labelWidth,18,8);ctx.fill();
+    ctx.fillStyle='#fff';ctx.fillText(label,worm.x,labelY);
+    ctx.restore();
   }
 }

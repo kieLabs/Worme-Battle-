@@ -19,7 +19,9 @@ export const angleLerp = (from, to, amount) => from + normalizeAngle(to - from) 
 export const circleHit = (a, b, padding = 0) => distance(a, b) < (a.r || 0) + (b.r || 0) + padding;
 export const random = (min, max, rng = Math.random) => min + (max - min) * rng();
 export const formatNumber = value => Math.floor(value || 0).toLocaleString('en-IN');
-export const segmentsForMass = mass => Math.max(12, Math.floor(12 + Math.sqrt(Math.max(0, mass)) * 1.5));
+// Food-count contribution makes each meal contribute visible body length while
+// keeping the requested 0.01 mass-per-food-point economy unchanged.
+export const segmentsForMass = (mass, foodCount = 0) => Math.min(180, Math.max(12, Math.floor(12 + Math.sqrt(Math.max(0, mass)) * 1.5 + Math.max(0, Number(foodCount) || 0) * 0.25)));
 export const MASS_PER_FOOD_POINT = 0.01;
 export const foodMassGain = (value, multiplier = 1) => Math.max(0, Number(value) || 0) * MASS_PER_FOOD_POINT * Math.max(0, Number(multiplier) || 0);
 export const rewardedAdCompleted = result => result === true || result?.rewarded === true;
@@ -39,7 +41,7 @@ export function makeDefaultSave() {
   };
 }
 
-export const wormRadiusForMass = mass => clamp(8 + Math.sqrt(Math.max(1, Number(mass) || 1)) * 1.2, 10, 42);
+export const wormRadiusForMass = (mass, foodCount = 0) => clamp(8 + Math.sqrt(Math.max(1, Number(mass) || 1)) * 1.2 + Math.max(0, Number(foodCount) || 0) * 0.12, 10, 42);
 export const newWormSpawnMass = (roll = Math.random()) => 14 + clamp(Number(roll) || 0, 0, 1) * 20;
 export function trailFoodPositions(worm, count) {
   const trail = Array.isArray(worm?.trail) ? worm.trail : [];

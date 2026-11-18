@@ -68,7 +68,7 @@ export class Game {
   setBoost(active){this.boost=!!active;}
   setZoom(value){this.viewZoom=clampZoom(value);return this.viewZoom;}
   zoomBy(delta){return this.setZoom(this.viewZoom+delta);}
-  getStats(){return {score:this.totalScore,mass:this.player?.mass||0,length:this.player?segmentsForMass(this.player.mass):0,rank:this.getRank(),time:this.elapsed,kills:this.kills,food:this.foodEaten,coins:this.coinsEarned,gems:this.gemsEarned,timeLeft:this.timeLeft,mode:this.mode,powerups:this.player?.powerups||{},powerupsCollected:this.powerupsCollected};}
+  getStats(){return {score:this.totalScore,mass:this.player?.mass||0,length:this.player?segmentsForMass(this.player.mass,this.player.food||0):0,rank:this.getRank(),time:this.elapsed,kills:this.kills,food:this.foodEaten,coins:this.coinsEarned,gems:this.gemsEarned,timeLeft:this.timeLeft,mode:this.mode,powerups:this.player?.powerups||{},powerupsCollected:this.powerupsCollected};}
   getRank(){if(!this.player)return 0;return 1+this.bots.filter(b=>b.alive&&b.mass>this.player.mass).length;}
   isPowerActive(id){return powerupIsActive(this.player,id,this.elapsed);}
   update(dt){
@@ -118,7 +118,7 @@ export class Game {
     updateWormTrail(bot,dt,bot.targetAngle||bot.angle,WORLD,Math.random()<.006&&bot.mass>24);
     // Worms do not die from touching their own trail. Only rival-body impacts
     // (handled in checkCollisions) and the arena boundary can eliminate a bot.
-    if(!this.isSpawnProtected(bot)&&touchesWorldWall(bot,WORLD,24)){this.killBot(bot,false);return;}
+    if(!this.isSpawnProtected(bot)&&touchesWorldWall(bot,WORLD,24)){this.killBot(bot,false,'wall');return;}
     this.collectForWorm(bot,false);
   }
   collectForWorm(worm,isPlayer){
@@ -183,16 +183,29 @@ export class Game {
         if(this.isPowerActive('shield')){delete p.powerups.shield;this.addParticles(p.x,p.y,'#7ceaff',20);this.onNotice('SHIELD BLOCKED A HIT');}
         else {this.end('collision');return;}
       }
-      if(this.bodyCollision(b,p)){this.killBot(b,true);continue;}
+      if(this.bodyCollision(b,p)){this.killBot(b,true,'rival');continue;}
     }
-    // Bot-versus-bot body impacts keep the arena populated and create food bursts.
-    if(this.frame%2===0){for(let i=0;i<this.bots.length;i++){const a=this.bots[i];if(!a.alive)continue;for(let j=0;j<this.bots.length;j++){if(i===j)continue;const b=this.bots[j];if(b.alive&&canWormsCollide(a,b,this.elapsed)&&this.bodyCollision(a,b)){this.killBot(a,false);break;}}}}
+    // Check each rival pair once. A worm is only tested against a DIFFERENT
+    // worm's body; its own trail is never a lethal target.
+    if(this.frame%2===0){
+      for(let i=0;i<this.bots.length;i++){
+        const a=this.bots[i];if(!a.alive)continue;
+        for(let j=i+1;j<this.bots.length;j++){
+          const b=this.bots[j];if(!b.alive||!canWormsCollide(a,b,this.elapsed))continue;
+          const aHitsB=this.bodyCollision(a,b);
+          const bHitsA=this.bodyCollision(b,a);
+          if(aHitsB)this.killBot(a,false,'rival');
+          if(bHitsA)this.killBot(b,false,'rival');
+          if(!a.alive)break;
+        }
+      }
+    }
     if(!this.isSpawnProtected(p)&&(p.x<28||p.y<28||p.x>WORLD.width-28||p.y>WORLD.height-28)){this.end('wall');}
   }
-  killBot(bot,credited){
-    if(!bot.alive)return;bot.alive=false;bot.respawnAt=this.elapsed+1.4;
+  killBot(bot,credited,reason='rival'){
+    if(!bot.alive)return;bot.alive=false;bot.deathReason=reason;bot.respawnAt=this.elapsed+1.4;
     // Death loot follows the exact curve of the defeated worm instead of a circular scatter.
-    const drops=Math.min(46,Math.max(10,Math.floor(segmentsForMass(bot.mass)*.78)));
+    const drops=Math.min(46,Math.max(10,Math.floor(segmentsForMass(bot.mass,bot.food||0)*.78)));
     const trailDrops=trailFoodPositions(bot,drops);
     trailDrops.forEach((point,i)=>this.spawnFood(point.x,point.y,i%11===0?FOOD_TYPES[15]:null));
     this.coins.push({x:bot.x,y:bot.y,value:8+Math.floor(bot.mass/35),life:18});this.addParticles(bot.x,bot.y,bot.skin.a,22);
@@ -202,7 +215,7 @@ export class Game {
   end(reason){
     if(this.state!=='playing')return;
     this.state='gameover';this.boost=false;
-    const summary={score:this.totalScore,mass:this.player.mass,length:segmentsForMass(this.player.mass),time:this.elapsed,kills:this.kills,food:this.foodEaten,coins:this.coinsEarned,powerups:this.powerupsCollected,reason,mode:this.mode};
+    const summary={score:this.totalScore,mass:this.player.mass,length:segmentsForMass(this.player.mass,this.player.food||0),time:this.elapsed,kills:this.kills,food:this.foodEaten,coins:this.coinsEarned,powerups:this.powerupsCollected,reason,mode:this.mode};
     this.lastSummary=summary;
     this.onGameOver(summary);
   }
