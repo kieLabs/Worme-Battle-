@@ -157,3 +157,30 @@ test('enemy name labels are rendered at every zoom level',async()=>{
   assert.match(source,/if\(worm\.name\)/);
   assert.doesNotMatch(source,/worm\.player \|\| zoom/);
 });
+
+test('a worm can never collide with its own trail, even when the head overlaps it',()=>{
+  const worm={x:100,y:100,r:20,trail:Array.from({length:80},()=>({x:100,y:100}))};
+  assert.equal(bodyHitsTrail(worm,worm),false);
+});
+
+test('bot names stay human-readable and unique when the bot count exceeds the name catalog',async()=>{
+  const {Game}=await import('../js/game.js');
+  const game=Object.create(Game.prototype);
+  Object.assign(game,{mode:'classic',elapsed:0});
+  const first=game.makeBot(0), repeated=game.makeBot(40);
+  assert.ok(first.name && !/[<>]/.test(first.name));
+  assert.notEqual(first.name,repeated.name);
+});
+
+test('player and bot body radius and trail capacity grow as mass increases',async()=>{
+  const {createWorm,updateWormTrail}=await import('../js/worm.js');
+  const {wormRadiusForMass,segmentsForMass}=await import('../js/logic.js');
+  for (const player of [true,false]) {
+    const worm=createWorm({x:500,y:500,angle:0,mass:30,player});
+    const initialSegments=segmentsForMass(worm.mass);
+    worm.mass=900;
+    updateWormTrail(worm,.016,0,{width:2000,height:2000});
+    assert.ok(wormRadiusForMass(worm.mass)>wormRadiusForMass(30));
+    assert.ok(Math.max(40,segmentsForMass(worm.mass)*5+20)>initialSegments*5+20);
+  }
+});
