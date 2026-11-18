@@ -12,3 +12,8 @@ export function selfHitsTrail(worm) {
   }
   return false;
 }
+
+export function touchesWorldWall(worm, world, margin = 24) {
+  return worm.x <= margin || worm.y <= margin ||
+    worm.x >= world.width - margin || worm.y >= world.height - margin;
+}

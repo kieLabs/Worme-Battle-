@@ -65,7 +65,8 @@ export function drawWorm(ctx,worm,skin,time,zoom=1) {
   }
   ctx.beginPath();ctx.arc(10,0,2.8,.15,Math.PI-.15);ctx.strokeStyle='#653d44';ctx.lineWidth=1.5;ctx.stroke();
   ctx.restore();
-  if(worm.player || zoom>.8) {
-    ctx.save();ctx.font=`bold ${worm.player?13:11}px system-ui`;ctx.textAlign='center';ctx.fillStyle='rgba(25,44,35,.8)';ctx.fillText(worm.name,worm.x+1,worm.y-radius-12+1);ctx.fillStyle='#fff';ctx.fillText(worm.name,worm.x,worm.y-radius-13);ctx.restore();
+  if(worm.name) {
+    ctx.save();ctx.font=`bold ${worm.player?13:11}px system-ui`;ctx.textAlign='center';ctx.fillStyle='rgba(25,44,35,.8)';const label=String(worm.name).replace(/[<>]/g,'').slice(0,18);
+    ctx.fillText(label,worm.x+1,worm.y-radius-12+1);ctx.fillStyle='#fff';ctx.fillText(label,worm.x,worm.y-radius-13);ctx.restore();
   }
 }

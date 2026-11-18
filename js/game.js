@@ -4,7 +4,7 @@ import { createWorm, updateWormTrail, bodyPoints, drawWorm } from './worm.js';
 import { Camera } from './camera.js';
 import { chooseBotAngle } from './ai.js';
 import { createFood, foodAttract, getWormMouthPoint } from './food.js';
-import { bodyHitsTrail, selfHitsTrail } from './collision.js';
+import { bodyHitsTrail, touchesWorldWall } from './collision.js';
 import { activatePowerup, expirePowerups, powerupIsActive } from './powerups.js';
 import { createParticleBurst, stepParticles } from './particles.js';
 
@@ -116,7 +116,9 @@ export class Game {
       bot.targetAngle=chooseBotAngle(bot,[this.player,...this.bots],this.food,WORLD);
     }
     updateWormTrail(bot,dt,bot.targetAngle||bot.angle,WORLD,Math.random()<.006&&bot.mass>24);
-    if(!this.isSpawnProtected(bot)&&selfHitsTrail(bot)){this.killBot(bot,false);return;}
+    // Worms do not die from touching their own trail. Only rival-body impacts
+    // (handled in checkCollisions) and the arena boundary can eliminate a bot.
+    if(!this.isSpawnProtected(bot)&&touchesWorldWall(bot,WORLD,24)){this.killBot(bot,false);return;}
     this.collectForWorm(bot,false);
   }
   collectForWorm(worm,isPlayer){
