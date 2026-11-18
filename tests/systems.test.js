@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { chooseBotAngle } from '../js/ai.js';
 import { createFood, foodAttract, getWormMouthPoint } from '../js/food.js';
-import { bodyHitsTrail, selfHitsTrail, touchesWorldWall } from '../js/collision.js';
+import { bodyHitsTrail, touchesWorldWall } from '../js/collision.js';
 import { activatePowerup, expirePowerups, powerupIsActive } from '../js/powerups.js';
 import { createParticleBurst, stepParticles } from '../js/particles.js';
 import { MISSIONS } from '../js/missions.js';
@@ -31,8 +31,6 @@ test('body and self collision checks detect trail intersections but ignore dista
   const owner={x:0,y:0,r:12,trail:Array.from({length:60},(_,i)=>({x:100+i,y:100}))};
   assert.equal(bodyHitsTrail({x:114,y:100,r:12},owner),true);
   assert.equal(bodyHitsTrail({x:0,y:0,r:12},owner),false);
-  const worm={x:0,y:0,r:12,trail:Array.from({length:60},(_,i)=>({x:i===32?4:100+i,y:0}))};
-  assert.equal(selfHitsTrail(worm),true);
 });
 
 test('power-ups activate, expire and stop applying after their timer',()=>{
@@ -183,4 +181,73 @@ test('player and bot body radius and trail capacity grow as mass increases',asyn
     assert.ok(wormRadiusForMass(worm.mass)>wormRadiusForMass(30));
     assert.ok(Math.max(40,segmentsForMass(worm.mass)*5+20)>initialSegments*5+20);
   }
+});
+
+test('same worm identity can never be treated as a rival collision target',()=>{
+  const worm={id:'worm-identity',x:100,y:100,r:16,trail:Array.from({length:80},()=>({x:100,y:100}))};
+  const headSnapshot={...worm};
+  assert.equal(bodyHitsTrail(headSnapshot,worm),false);
+});
+
+test('enemy survives self-overlapping trail but dies when its head enters a rival body',async()=>{
+  const {Game}=await import('../js/game.js');
+  const game=Object.create(Game.prototype);
+  const player={id:'player',x:1000,y:1000,r:12,mass:30,trail:Array.from({length:80},(_,i)=>({x:1000+i,y:1000})),spawnProtectedUntil:0};
+  const selfCrossingBot={id:'bot-self',x:400,y:400,r:12,mass:30,alive:true,trail:Array.from({length:80},()=>({x:400,y:400})),spawnProtectedUntil:0};
+  Object.assign(game,{player,bots:[selfCrossingBot],elapsed:5,frame:1,state:'playing',isSpawnProtected:()=>false,isPowerActive:()=>false,addParticles:()=>{},onNotice:()=>{},killBot:bot=>{bot.alive=false;},end:reason=>{game.endReason=reason;}});
+  game.checkCollisions();
+  assert.equal(selfCrossingBot.alive,true);
+
+  player.trail=Array.from({length:80},(_,i)=>({x:i===22?400:1000+i,y:i===22?400:1000}));
+  game.checkCollisions();
+  assert.equal(selfCrossingBot.alive,false);
+});
+
+test('AI enemies use readable human first names, with unique suffixes beyond the catalog',async()=>{
+  const {BOT_NAMES}=await import('../js/config.js');
+  assert.ok(BOT_NAMES.includes('Alex'));
+  assert.ok(BOT_NAMES.includes('Sophia'));
+  const {Game}=await import('../js/game.js');
+  const game=Object.create(Game.prototype);
+  Object.assign(game,{mode:'classic',elapsed:0});
+  const first=game.makeBot(0), repeated=game.makeBot(BOT_NAMES.length);
+  assert.match(first.name,/^[A-Z][a-z]+$/);
+  assert.notEqual(first.name,repeated.name);
+});
+
+test('food eaten by either player or AI visibly increases body thickness and length',async()=>{
+  const {wormRadiusForMass,segmentsForMass}=await import('../js/logic.js');
+  const baseRadius=wormRadiusForMass(30,0),fedRadius=wormRadiusForMass(30.2,1);
+  const baseLength=segmentsForMass(30,0),fedLength=segmentsForMass(30.2,4);
+  assert.ok(fedRadius>=baseRadius+0.1);
+  assert.ok(fedLength>baseLength);
+});
+
+test('player and AI gain body growth each time they consume food',async()=>{
+  const {Game}=await import('../js/game.js');
+  const game=Object.create(Game.prototype);
+  const meal={x:100,y:100,r:5,type:{value:20,color:'#ff5555'}};
+  Object.assign(game,{food:[{...meal}],elapsed:2,lastCollectSound:0,totalScore:0,foodEaten:0,coinsEarned:0,save:{xp:0},isPowerActive:()=>false,addParticles:()=>{},onSound:()=>{}});
+  const player={x:100,y:100,r:14,mass:30,food:0,score:0};
+  game.collectForWorm(player,true);
+  assert.equal(player.food,1);
+  assert.ok(Math.abs(player.mass-30.2)<1e-10);
+
+  game.food=[{...meal}];
+  const enemy={x:100,y:100,r:14,mass:30,food:0,score:0};
+  game.collectForWorm(enemy,false);
+  assert.equal(enemy.food,1);
+  assert.ok(Math.abs(enemy.mass-30.2)<1e-10);
+});
+
+test('AI is eliminated at the arena wall and the death is recorded as a wall hit',async()=>{
+  const {Game}=await import('../js/game.js');
+  const {createWorm}=await import('../js/worm.js');
+  const game=Object.create(Game.prototype);
+  const bot=createWorm({x:24,y:300,angle:Math.PI,name:'WallBot',mass:30});
+  bot.targetAngle=Math.PI;bot.think=1;
+  Object.assign(game,{elapsed:5,isSpawnProtected:()=>false,collectForWorm:()=>{},killBot:(worm,_credited,reason)=>{worm.alive=false;worm.deathReason=reason;}});
+  game.updateBot(bot,.016);
+  assert.equal(bot.alive,false);
+  assert.equal(bot.deathReason,'wall');
 });
