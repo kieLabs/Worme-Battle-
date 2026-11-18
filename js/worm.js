@@ -9,6 +9,8 @@ export function createWorm({x,y,angle=0,name='Worm',skin,player=false,mass=40,ai
   return worm;
 }
 export function updateWormTrail(worm, dt, targetAngle, world, boost=false) {
+  // Keep collision radius synchronized with growth for both the player and AI worms.
+  worm.r = wormRadiusForMass(worm.mass);
   const turn = clamp(dt*4.3,0,1);
   worm.angle = angleLerp(worm.angle,targetAngle,turn);
   const activeSpeed = worm.baseSpeed * (boost?1.75:1) * (worm.powerups.speed?1.45:1) * (worm.powerups.super?2.05:1);

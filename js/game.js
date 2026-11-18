@@ -40,8 +40,8 @@ export class Game {
   makeBot(index){
     const angle=random(0,Math.PI*2),rad=random(230,900);const x=clamp(WORLD.width/2+Math.cos(angle)*rad,100,WORLD.width-100);const y=clamp(WORLD.height/2+Math.sin(angle)*rad,100,WORLD.height-100);
     const skin=SKINS[Math.floor(Math.random()*SKINS.length)];
-    const bot=createWorm({x,y,angle:random(-Math.PI,Math.PI),name:BOT_NAMES[index%BOT_NAMES.length],skin,player:false,mass:this.mode==='giant'?random(60,130):newWormSpawnMass(),ai:index});
-    bot.r=random(11,14);bot.think=Math.random();bot.spawnProtectedUntil=this.elapsed+3;return bot;
+    const bot=createWorm({x,y,angle:random(-Math.PI,Math.PI),name:`${BOT_NAMES[index%BOT_NAMES.length]}${index>=BOT_NAMES.length?` ${Math.floor(index/BOT_NAMES.length)+1}`:''}`,skin,player:false,mass:this.mode==='giant'?random(60,130):newWormSpawnMass(),ai:index});
+    bot.r=bot.r;bot.think=Math.random();bot.spawnProtectedUntil=this.elapsed+3;return bot;
   }
   spawnFood(x=random(70,WORLD.width-70),y=random(70,WORLD.height-70),forcedType=null){
     const type=forcedType||weightedPick(FOOD_TYPES);

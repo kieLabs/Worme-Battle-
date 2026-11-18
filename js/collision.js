@@ -1,4 +1,6 @@
 export function bodyHitsTrail(head, owner) {
+  // A worm head is never a valid collision target for its own body.
+  if (!head || !owner || head === owner) return false;
   for (let i = 14; i < owner.trail.length; i += 4) {
     const point = owner.trail[i];
     if (Math.hypot(head.x - point.x, head.y - point.y) < (head.r || 12) + owner.r * .78) return true;
