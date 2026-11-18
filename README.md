@@ -157,3 +157,10 @@ Normal food mass gain is now `0.01` per food-value point. A 20-point food adds 0
 Use `blogger-xml-post-snippet.html` in the HTML view of a Blogger post or inside the appropriate page container in your XML theme. It embeds the GitHub Pages game in a responsive iframe, so the theme's header, navigation, search, labels, comments and other Blogger functions remain outside the game and are not overwritten by game CSS/JavaScript. Keep the game project deployed at `https://kielabs.github.io/worms-battle/`, or change the iframe URL in the snippet to your actual GitHub Pages URL. When the INSTALL APP button is tapped inside the embed, it opens the hosted game in a top-level tab. On that top-level page the button invokes the browser-native install confirmation as soon as Chrome makes it available. A cross-origin iframe cannot directly install itself or bypass browser confirmation.
 
 Wardrobe, GamerKie Shop and Workshop colour palettes are rendered as visual swatches with DOM style properties. The hexadecimal colour values are not inserted into visible text labels.
+
+
+## Enemy AI collision and name-label update
+- AI worms no longer die from intersecting their own trail.
+- AI worms are eliminated by rival body collisions or touching the arena's outer wall.
+- Enemy gamer-name labels are rendered at all camera zoom levels.
+- Run `npm test` to verify the collision and label regression tests.
