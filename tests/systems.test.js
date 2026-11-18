@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { chooseBotAngle } from '../js/ai.js';
 import { createFood, foodAttract, getWormMouthPoint } from '../js/food.js';
-import { bodyHitsTrail, selfHitsTrail } from '../js/collision.js';
+import { bodyHitsTrail, selfHitsTrail, touchesWorldWall } from '../js/collision.js';
 import { activatePowerup, expirePowerups, powerupIsActive } from '../js/powerups.js';
 import { createParticleBurst, stepParticles } from '../js/particles.js';
 import { MISSIONS } from '../js/missions.js';
@@ -139,4 +139,21 @@ test('game-over markup supports stacked portrait and side-by-side landscape acti
   assert.match(html,/id="continue-ad-button"/);
   assert.match(css,/grid-template-areas:"summary actions"/);
   assert.match(css,/\.live-score-list\{height:220px/);
+});
+
+
+test('enemy worms are not eliminated for touching their own trail, only world-edge contact is a wall hit',async()=>{
+  const worm={x:100,y:100,r:12,trail:[{x:100,y:100},{x:102,y:100}]};
+  assert.equal(touchesWorldWall(worm,{width:1000,height:800}),false);
+  assert.equal(touchesWorldWall({...worm,x:24},{width:1000,height:800}),true);
+  assert.equal(touchesWorldWall({...worm,y:776},{width:1000,height:800}),true);
+  const gameSource=await import('node:fs/promises').then(fs=>fs.readFile(new URL('../js/game.js',import.meta.url),'utf8'));
+  assert.doesNotMatch(gameSource,/selfHitsTrail\(bot\)/);
+});
+
+test('enemy name labels are rendered at every zoom level',async()=>{
+  const {readFile}=await import('node:fs/promises');
+  const source=await readFile(new URL('../js/worm.js',import.meta.url),'utf8');
+  assert.match(source,/if\(worm\.name\)/);
+  assert.doesNotMatch(source,/worm\.player \|\| zoom/);
 });
