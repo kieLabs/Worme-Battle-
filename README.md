@@ -2,7 +2,7 @@
 
 **Eat. Grow. Survive. Dominate!**
 
-An original, offline-first 2D worm arena game built with HTML5 Canvas, CSS and vanilla JavaScript. It uses original procedural canvas graphics and does not copy Worms Zone.io artwork, source code, logos or assets. The playable arena is a 6,500-unit radius cyber-neon circle with a crimson boundary.
+An original, offline-first 2D worm arena game built with HTML5 Canvas, CSS and vanilla JavaScript. It uses original procedural canvas graphics and does not copy Worms Zone.io artwork, source code, logos or assets.
 
 ## Play locally
 
@@ -31,16 +31,16 @@ Use the separate `blogger-single.html` file from the ZIP. In Blogger, create a p
 
 ## Controls
 
-- **Desktop:** move the mouse to steer; hold left-click, `Space` or right-click to boost; arrow keys or WASD also steer; `Esc` pauses.
-- **Mobile:** touch and drag on the left side to steer with the floating thumb pad; press and hold the glowing right-side ⚡ BOOST button to dash. Releasing stops the boost. Collect the 🔭 RADAR power-up for an extra 30% camera zoom-out.
+- **Desktop:** move the mouse to steer; hold `Space` or right-click to boost; arrow keys or WASD also steer; `Esc` pauses.
+- **Mobile:** touch and drag anywhere on the left half to steer with a floating thumb pad; press and hold anywhere on the right half to boost; releasing stops the boost. Collect the new 🔭 ZOOM OUT power-up to temporarily pull the camera back.
 - Collect food and power-ups. Avoid rival bodies and the arena boundary.
 
 ## Included features
 
 - Five playable modes: Classic Endless, Battle Royale (last-worm-standing with no rival respawns), Time Challenge, Giant Worm and Survival Challenge.
-- Procedurally rendered worm skins (Neon Cyan, Cyber Magenta, Toxic Green, Lava Gold and Electric Violet starter palettes), food, power-up drops and arena details, including cyber-neon hex/grid floor, glowing crimson circular wall, expressive eyes and food-reactive mouth.
-- 25–30 uniquely named AI rival worms (adjusted by display size), forage/evade/opportunist/trap steering with look-ahead body and circular-wall avoidance plus short AI trap bursts, a live leaderboard, collision loot and player progression.
-- Timed power-ups including 15-second Magnet (attracts food from 320px into the mouth), Radar Zoom (an extra 30% zoom-out beyond the normal zoom floor), 2x/5x Score Multiplier and 40% Turbo with sharper turning, plus the existing shields, coin/XP and other boosts. Normal boost drains 2 score points per frame at 60 FPS and drops crumbs; Turbo suspends that drain.
+- Procedurally rendered worm skins, food, power-up drops and arena details.
+- 30–45 AI rival worms (adjusted by display size), a live leaderboard, collisions, food drops after eliminations and player progression.
+- Ten timed power-ups, boost with mass consumption, coins and XP.
 - Wardrobe with 30 original skin palettes, shop, unlockable arena themes and workshop settings.
 - Missions, daily reward streak, achievements, profile, settings and local save data.
 - Responsive phone controls and desktop keyboard/mouse support.
@@ -51,7 +51,7 @@ Profile data is saved to browser `localStorage` on the device and browser where 
 
 ## Tests
 
-The project includes fast unit tests for core geometry, collisions, circular arena rules, growth curves, spatial hashing, named AI/trap behavior, power-up timers, mobile boost control, particles, shop purchases and save data.
+The project includes 48 fast unit tests for core geometry, collisions, growth, weighted food selection, AI steering, power-up timers, particles, shop purchases and save data.
 
 ```bash
 npm test
@@ -105,9 +105,9 @@ The AI, food, collision, power-up, particle, mission, achievement and shop rules
 - On mobile, there are no fixed steering or boost buttons. Touch anywhere on the **left half** of the play area and drag the floating circular thumb to steer. The thumb pad appears exactly where the finger first touches.
 - Touch and hold anywhere on the **right half** to boost. The worm accelerates while the finger remains down and returns to normal speed immediately after release. Both thumbs can be used together.
 - New worms receive a **3-second spawn shield**. A glowing blue shield cover and 🛡️ icon remain visible during protection; collisions involving that new worm are ignored until the three seconds end.
-- The arena uses a crimson circular boundary (6,500 world units radius) instead of rectangular arena edges. Camera framing now uses the screen's CSS-pixel size rather than the high-DPI canvas size, preventing the view from clipping or shifting on fullscreen phones.
+- The arena has a thick yellow frame along all four sides. Camera framing now uses the screen's CSS-pixel size rather than the high-DPI canvas size, preventing the view from clipping or shifting on fullscreen phones.
 - Phones request fullscreen and landscape orientation where the browser supports it. If automatic orientation lock is unavailable, the rotate-device prompt remains available. Desktop keeps mouse steering, right-click / Space boost, and WASD / Arrow-key steering.
-- Neither player nor enemies die from touching their own body. Only another worm's body or the circular arena wall can eliminate them after spawn protection ends.
+- The player worm does not die from touching its own body. Enemy-body collisions and arena-wall collisions remain lethal after spawn protection ends.
 
 ## Updated files
 
@@ -116,9 +116,9 @@ The AI, food, collision, power-up, particle, mission, achievement and shop rules
 ## Latest arena HUD and food update
 - The minimap is displayed at the upper-left and shows the player plus live AI worms across the full arena.
 - A compact score card appears directly below the minimap on the upper-left; collected coins and gems appear underneath it. The upper-right live score list shows the first ten living worms at once; scroll inside it to see the remaining rivals.
-- Worm body/head size and length scale from score using the requested score-curve formulas, with a 48px radius cap; the existing 0.01 mass-per-food-point economy remains intact.
+- Worm body/head size now scales with mass; larger worms look visibly larger while starter worms stay compact.
 - When a worm is defeated, its food drops trace the shape of its actual trail instead of appearing in a random circular pile.
-- Nearby loose food gently drifts toward the closest worm's mouth; Magnet pulls food within 320 world units. Food collection and AI perception use spatial-hash grids, and off-screen food, potions, particles, grid cells and worm segments are culled from rendering.
+- Nearby loose food gently drifts toward the closest worm's mouth; the Magnet power-up increases the attraction range and strength.
 - Power-up badges use safe text nodes; HTML entities are decoded and markup is stripped so code is never displayed. Every active power-up shows a live seconds-remaining countdown and timer bar along the top.
 - Manual zoom buttons were removed. A collectible 🔭 ZOOM OUT power-up temporarily zooms the camera out.
 - The full-screen app and canvas are constrained to the visible viewport and safe-area edges to prevent clipping.
@@ -165,24 +165,3 @@ Wardrobe, GamerKie Shop and Workshop colour palettes are rendered as visual swat
 - Enemy nameplates display readable human first names (for example Alex, Sophia and Ethan) above each AI worm at all camera zoom levels. Names remain unique after the catalog is exhausted.
 - Player and AI worms both visibly grow thicker and longer as they eat. The original economy remains at 0.01 mass per food-value point; each collected food also contributes a small visual growth increment.
 - Run `npm test` to verify the collision, nameplate and food-growth regression tests.
-
-## Cyber-neon gameplay additions
-
-- Default arena: dark `#0b0e14` floor, `#1a2333` grid and hex mesh, and a neon crimson circular boundary with a 6,500-unit radius. Existing arena themes remain selectable.
-- Score growth uses `floor(15 + score^0.58 × 1.4)` target segments and `min(48, 14 + score^0.32 × 0.65)` body radius. Body samples are spaced by `radius × 0.45`; the prior 0.01 mass-per-food-point progression remains unchanged.
-- Player movement is based on 3.2 world units/frame at 60 FPS; holding boost raises it to 6.2 units/frame, drains 2 score points per frame, and drops glowing crumbs. The 15-second Turbo potion grants 40% extra speed and sharper turning without this drain.
-- Magnet, Radar Zoom, Score Multiplier (2x/5x) and Turbo potions last 15 seconds. Worm eyes glance toward nearby food and their mouth animates open when food is within 80 units.
-- `Worms-Battle-Single-File.html` is generated from the same source modules and contains the complete game with inlined CSS and JavaScript, no external scripts, stylesheets, images, audio files, manifest or service-worker requests. It can run as a standalone local HTML file; its PWA install control is intentionally omitted because a self-contained file has no hosted manifest/service worker.
-
-
-## Run the standalone single-file build
-
-Open `Worms-Battle-Single-File.html` directly in a modern browser. This version includes all game markup, styles and JavaScript in one file and does not load remote libraries, images, fonts or audio files. The main project `index.html` remains the GitHub Pages/PWA version with its original multi-file structure.
-
-To regenerate the two bundled HTML outputs after editing source modules:
-
-```bash
-python build_single.py
-```
-
-The Blogger post snippet remains available separately in `blogger-xml-post-snippet.html`.
