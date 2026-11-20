@@ -96,9 +96,5 @@ body{position:fixed;inset:0}
   .gameover-actions .play-button,.gameover-actions .continue-ad-button,.gameover-actions .secondary-button{min-height:44px}
 }
 
-/* Home-screen PWA install action beside the player profile. */
-.profile-actions{display:flex;align-items:center;gap:7px;flex:0 0 auto}.install-app-button{min-height:34px;padding:0 11px;border-radius:10px;background:linear-gradient(110deg,#e3fff0,#c9f5dc);border:1px solid #a7e8c3;color:#08764f;font-size:9px;font-weight:1000;letter-spacing:.45px;white-space:nowrap;box-shadow:0 3px 9px rgba(14,119,77,.1)}.install-app-button:active{transform:translateY(1px)}.install-app-button.installed{background:#eaf1ec;color:#658073;border-color:#d6e3da}
-@media(max-width:760px){.profile-actions{gap:3px}.install-app-button{min-height:31px;padding:0 7px;font-size:8px;letter-spacing:0}.mini-link{padding:7px 4px;font-size:9px}}
-
 /* Colour swatches are rendered as visual chips; hex strings are never displayed as labels. */
 .theme-preview{height:24px;border-radius:8px;border:3px solid #dceee3;margin:0 0 8px;background:#92c96b}.shop-theme-preview{height:42px;margin-bottom:10px}
