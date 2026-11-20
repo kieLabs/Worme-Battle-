@@ -27,9 +27,54 @@ ui=new UI({save,game,audio,
 });
 new Controls({canvas:$('game-canvas'),game,touchStick:$('touch-stick')});
 
+// Progressive Web App installation: open the browser's native install confirmation.
+let pendingInstallPrompt = null;
+const installButton = $('install-app-button');
+const isStandaloneApp = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+const isEmbeddedGame = () => window.self !== window.top;
+function syncInstallButton(){
+  if(!installButton)return;
+  if(isStandaloneApp()){
+    installButton.textContent='✓ APP INSTALLED';installButton.classList.add('installed');installButton.disabled=true;
+  }else{
+    installButton.disabled=isEmbeddedGame()?false:!pendingInstallPrompt;
+  }
+}
+window.addEventListener('beforeinstallprompt',event=>{
+  event.preventDefault();pendingInstallPrompt=event;
+  if(installButton){installButton.textContent='⬇ INSTALL APP';installButton.disabled=false;}
+});
+window.addEventListener('appinstalled',()=>{
+  pendingInstallPrompt=null;syncInstallButton();ui?.toast('WORMS BATTLE installed successfully!');
+});
+installButton?.addEventListener('click',async()=>{
+  if(isStandaloneApp()){syncInstallButton();return;}
+  // A PWA install prompt belongs to its top-level page, not a cross-origin XML/Blogger iframe.
+  if(isEmbeddedGame()) {
+    window.open(new URL('./', window.location.href).href, '_blank', 'noopener,noreferrer');
+    return;
+  }
+  const promptEvent=pendingInstallPrompt;
+  if(!promptEvent)return;
+  pendingInstallPrompt=null;
+  installButton.disabled=true;
+  try{
+    const result=await promptEvent.prompt();
+    const outcome=result?.outcome||(await promptEvent.userChoice?.then(choice=>choice?.outcome).catch(()=>''));
+    if(outcome==='accepted'){
+      installButton.textContent='INSTALLING…';
+    }else{
+      installButton.disabled=false;
+    }
+  }catch(error){
+    console.warn('The browser install prompt could not be opened:',error);
+    installButton.disabled=false;
+  }
+});
 if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){
   window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(error=>console.warn('Offline install support unavailable:',error)));
 }
+syncInstallButton();
 
 function finalizeCurrentRun(){
   const summary=game.finalizeRun();
