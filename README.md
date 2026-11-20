@@ -134,8 +134,18 @@ The AI, food, collision, power-up, particle, mission, achievement and shop rules
 
 ## Install WORMS BATTLE like a mobile app (PWA)
 
-The game does not display an install button. It runs as a website inside the browser or Blogger iframe.
+The home screen now has an **INSTALL APP** button beside PROFILE. On supported Android browsers (Chrome/Edge), tap it when it becomes enabled and confirm the browser's native install prompt. The app is installed directly from the website; no Play Store listing is needed.
 
+PWA files included in this project:
+- `manifest.webmanifest` — standalone app name, icon, orientation and start URL.
+- `sw.js` — app-shell caching for repeat/offline launches.
+- `assets/icons/icon-192.png` and `assets/icons/icon-512.png` — install icons.
+
+Important:
+- Deploy the complete project to GitHub Pages (HTTPS), keeping `manifest.webmanifest`, `sw.js`, `index.html`, `js/`, `style.css`, and `assets/` together at the same repository site root.
+- Open the GitHub Pages site in Chrome. Tap **INSTALL APP** and accept the prompt. The button opens the native browser install confirmation when Chrome has made the site installable. The website cannot silently install an app or skip browser confirmation; the `beforeinstallprompt` API is Chromium-specific and is not supported in iOS Safari.
+- Browser and device rules control whether the native install prompt is available. A website cannot silently install itself or bypass the browser's confirmation. An HTML game embedded inside a Blogger post cannot install the Blogger page as a standalone app; install the GitHub Pages game URL directly.
+- The service worker is registered only on HTTPS or localhost. GitHub Pages provides HTTPS.
 
 ## Growth balance
 
@@ -144,7 +154,7 @@ Normal food mass gain is now `0.01` per food-value point. A 20-point food adds 0
 
 ## XML/Blogger website integration
 
-Use `blogger-xml-post-snippet.html` in the HTML view of a Blogger post or inside the appropriate page container in your XML theme. It embeds the GitHub Pages game in a responsive iframe, so the theme's header, navigation, search, labels, comments and other Blogger functions remain outside the game and are not overwritten by game CSS/JavaScript. Keep the game project deployed at `https://kielabs.github.io/worms-battle/`, or change the iframe URL in the snippet to your actual GitHub Pages URL. The Blogger embed contains no install button and does not redirect visitors to the GitHub Pages URL.
+Use `blogger-xml-post-snippet.html` in the HTML view of a Blogger post or inside the appropriate page container in your XML theme. It embeds the GitHub Pages game in a responsive iframe, so the theme's header, navigation, search, labels, comments and other Blogger functions remain outside the game and are not overwritten by game CSS/JavaScript. Keep the game project deployed at `https://kielabs.github.io/worms-battle/`, or change the iframe URL in the snippet to your actual GitHub Pages URL. When the INSTALL APP button is tapped inside the embed, it opens the hosted game in a top-level tab. On that top-level page the button invokes the browser-native install confirmation as soon as Chrome makes it available. A cross-origin iframe cannot directly install itself or bypass browser confirmation.
 
 Wardrobe, GamerKie Shop and Workshop colour palettes are rendered as visual swatches with DOM style properties. The hexadecimal colour values are not inserted into visible text labels.
 
