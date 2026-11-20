@@ -5,19 +5,16 @@ export class Controls {
     this.canvas=canvas;
     this.game=game;
     this.touchStick=touchStick;
-    this.boostButton=document.getElementById('boost-button');
     this.steerPointer=null;
     this.steerOrigin=null;
     this.boostPointers=new Set();
     this.keys=new Set();
     this.currentAngle=0;
-    this.mouseBoost=false;
     this.knob=touchStick?.querySelector('.touch-stick-knob');
     this.bind();
   }
 
   bind(){
-    const syncBoost=()=>this.game.setBoost(this.boostPointers.size>0||this.mouseBoost||this.keys.has(' '));
     const aimWithMouse=e=>{
       const rect=this.canvas.getBoundingClientRect();
       const cx=rect.left+rect.width/2;
@@ -27,14 +24,6 @@ export class Controls {
     };
 
     this.canvas.addEventListener('contextmenu',e=>e.preventDefault());
-    this.boostButton?.addEventListener('pointerdown',e=>{
-      if(this.game.state!=='playing')return;
-      e.preventDefault();
-      try{this.boostButton.setPointerCapture(e.pointerId);}catch{}
-      this.boostPointers.add(e.pointerId);
-      this.boostButton.classList.add('active');
-      syncBoost();
-    });
     this.canvas.addEventListener('pointerdown',e=>{
       if(e.pointerType==='touch'){
         if(this.game.state!=='playing')return;
@@ -49,15 +38,13 @@ export class Controls {
           this.showTouchStick(e.clientX,e.clientY);
         }else{
           this.boostPointers.add(e.pointerId);
-          syncBoost();
+          this.game.setBoost(true);
         }
         return;
       }
       if(e.pointerType==='mouse'){
-        if(e.button===2||e.button===0){
-          if(e.button===0)aimWithMouse(e);
-          this.mouseBoost=true;syncBoost();
-        }
+        if(e.button===2)this.game.setBoost(true);
+        else if(e.button===0)aimWithMouse(e);
       }
     });
 
@@ -72,8 +59,8 @@ export class Controls {
         this.steerOrigin=null;
         this.hideTouchStick();
       }
-      if(this.boostPointers.delete(e.pointerId)){if(this.boostPointers.size===0)this.boostButton?.classList.remove('active');syncBoost();}
-      if(e.pointerType==='mouse'&&(e.button===0||e.button===2)){this.mouseBoost=false;syncBoost();}
+      if(this.boostPointers.delete(e.pointerId))this.game.setBoost(this.boostPointers.size>0);
+      if(e.pointerType==='mouse'&&e.button===2)this.game.setBoost(false);
     };
     window.addEventListener('pointerup',release);
     window.addEventListener('pointercancel',release);
@@ -83,20 +70,18 @@ export class Controls {
       const key=e.key.toLowerCase();
       if(['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d',' '].includes(key))e.preventDefault();
       this.keys.add(key);
-      if(key===' ')syncBoost();
+      if(key===' ')this.game.setBoost(true);
       this.updateKeyboardAngle();
     });
     window.addEventListener('keyup',e=>{
       const key=e.key.toLowerCase();
       this.keys.delete(key);
-      if(key===' ')syncBoost();
+      if(key===' ')this.game.setBoost(false);
       this.updateKeyboardAngle();
     });
     window.addEventListener('blur',()=>{
       this.boostPointers.clear();
-      this.mouseBoost=false;
-      this.boostButton?.classList.remove('active');
-      syncBoost();
+      this.game.setBoost(false);
       this.steerPointer=null;
       this.steerOrigin=null;
       this.hideTouchStick();

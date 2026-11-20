@@ -11,7 +11,7 @@ let ui;
 const game=new Game($('game-canvas'),{
   onUpdate:stats=>ui?.updateHUD(stats),
   onNotice:message=>{ui?.notice(message);},
-  onSound:type=>{if(type==='collect')audio.collect();if(type==='power')audio.power();if(type==='boostStart')audio.setBoost(true);if(type==='boostStop')audio.setBoost(false);},
+  onSound:type=>{if(type==='collect')audio.collect();if(type==='power')audio.power();},
   onGameOver:summary=>{
     if(summary.reason==='victory')audio.power();else audio.death();
     ui.showGameOver(summary);

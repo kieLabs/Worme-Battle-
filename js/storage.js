@@ -11,8 +11,6 @@ export function loadSave() {
     merged.settings = {...base.settings, ...(parsed.settings || {})};
     merged.workshop = {...base.workshop, ...(parsed.workshop || {})};
     if (!Array.isArray(merged.unlockedSkins)) merged.unlockedSkins = [0];
-    // Keep the five neon starter palettes available in older local profiles.
-    merged.unlockedSkins = [...new Set([...merged.unlockedSkins, 8, 3, 17, 15, 20])];
     if (!Array.isArray(merged.unlockedThemes)) merged.unlockedThemes = ['meadow'];
     if (!Array.isArray(merged.achievements)) merged.achievements = [];
     return merged;
