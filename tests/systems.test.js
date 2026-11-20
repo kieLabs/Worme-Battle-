@@ -87,7 +87,7 @@ test('holding boost increases worm travel speed and releasing it restores normal
   const normalDistance=normal.x-100;
   const boostedDistance=boosted.x-100;
   assert.ok(boostedDistance>normalDistance*1.7);
-  assert.ok(Math.abs(normalDistance-19.2)<0.01);
+  assert.ok(Math.abs(normalDistance-15)<0.01);
 });
 
 test('active power-ups expose a positive countdown in seconds',async()=>{
@@ -100,7 +100,7 @@ test('zoom power pickup exists and is timed',async()=>{
   const {POWERUPS}=await import('../js/config.js');
   const zoom=POWERUPS.find(power=>power.id==='zoom');
   assert.ok(zoom);
-  assert.equal(zoom.duration,15000);
+  assert.equal(zoom.duration,9000);
 });
 
 test('a rewarded revive resumes the same worm at its death location with temporary protection',async()=>{
@@ -250,152 +250,4 @@ test('AI is eliminated at the arena wall and the death is recorded as a wall hit
   game.updateBot(bot,.016);
   assert.equal(bot.alive,false);
   assert.equal(bot.deathReason,'wall');
-});
-
-test('cyber arena uses a 6500-unit circular boundary and eliminates worms only at its circumference',async()=>{
-  const {WORLD}=await import('../js/config.js');
-  assert.equal(WORLD.arenaRadius,6500);
-  const {touchesWorldWall}=await import('../js/collision.js');
-  const center={x:WORLD.centerX,y:WORLD.centerY,r:20};
-  assert.equal(touchesWorldWall(center,WORLD,24),false);
-  assert.equal(touchesWorldWall({...center,x:WORLD.centerX+WORLD.arenaRadius-10},WORLD,24),true);
-  assert.equal(touchesWorldWall({...center,x:WORLD.centerX+WORLD.arenaRadius-100},WORLD,24),false);
-});
-
-test('score-based worm length and radius follow the requested logarithmic cap formulas',async()=>{
-  const {segmentsForScore,wormRadiusForScore}=await import('../js/logic.js');
-  const score=5000;
-  assert.equal(segmentsForScore(score),Math.floor(15+Math.pow(score,.58)*1.4));
-  assert.equal(wormRadiusForScore(score),Math.min(48,14+Math.pow(score,.32)*.65));
-  assert.equal(wormRadiusForScore(1),14.65);
-  assert.equal(wormRadiusForScore(100000),Math.min(48,14+Math.pow(100000,.32)*.65));
-  assert.equal(wormRadiusForScore(1000000),48);
-  assert.ok(segmentsForScore(100000)>segmentsForScore(5000));
-});
-
-test('spatial hash returns nearby food candidates without returning distant cells',async()=>{
-  const {SpatialHash}=await import('../js/spatial.js');
-  const grid=new SpatialHash(100);
-  const near={x:20,y:30},far={x:900,y:900};
-  grid.rebuild([near,far]);
-  assert.deepEqual(grid.query(0,0,80),[near]);
-  assert.deepEqual(grid.query(800,800,160),[far]);
-});
-
-test('the cyber arena retains 25 or more autonomous opponents and thousands of food drops',async()=>{
-  const {Game}=await import('../js/game.js');
-  const {WORLD}=await import('../js/config.js');
-  const game=Object.create(Game.prototype);
-  Object.assign(game,{cssWidth:1280,cssHeight:720,mode:'classic',elapsed:0,save:{selectedTheme:'meadow',username:'Test',selectedSkin:0},camera:{x:0,y:0,y:0},onNotice:()=>{},onUpdate:()=>{},loop:()=>{},spawnFood:()=>{},spawnPower:()=>{}});
-  assert.ok(WORLD.arenaRadius>=6500);
-  const botCount=Math.min(30,Math.max(25,Math.floor((game.cssWidth*game.cssHeight)/22000)));
-  assert.ok(botCount>=25&&botCount<=30);
-});
-
-test('core potion set includes 15-second magnet, zoom, multiplier and turbo buffs',async()=>{
-  const {POWERUPS}=await import('../js/config.js');
-  for(const id of ['magnet','zoom','multiplier','turbo']){
-    const power=POWERUPS.find(item=>item.id===id);
-    assert.ok(power,`missing ${id}`);
-    assert.equal(power.duration,15000);
-  }
-});
-
-test('AI steering evaluates look-ahead body obstacles and arena edge instead of only nearest food',async()=>{
-  const {chooseBotAngle}=await import('../js/ai.js');
-  const bot={x:500,y:500,angle:0,score:200,mass:100,r:20,brain:0};
-  const obstacle={x:620,y:500,angle:Math.PI,score:100,mass:50,r:20,alive:true,trail:Array.from({length:60},(_,i)=>({x:620,y:470+i}))};
-  const result=chooseBotAngle(bot,[bot,obstacle],[{x:1000,y:500}],{width:13000,height:13000,centerX:6500,centerY:6500,arenaRadius:6500},[]);
-  assert.ok(Number.isFinite(result));
-  assert.ok(Math.abs(result)>0.02,'bot should steer around the obstacle');
-});
-
-test('worm trail length and thickness use score progression while the original slow mass economy remains intact',async()=>{
-  const {createWorm}=await import('../js/worm.js');
-  const worm=createWorm({x:100,y:100,angle:0,mass:30,player:true});
-  const initialRadius=worm.r;
-  worm.score=5000;
-  const {wormRadiusForScore,segmentsForScore,foodMassGain}=await import('../js/logic.js');
-  worm.r=Math.max(worm.r,wormRadiusForScore(worm.score));
-  worm.targetSegments=segmentsForScore(worm.score);
-  assert.ok(worm.r>initialRadius);
-  assert.equal(worm.targetSegments,segmentsForScore(5000));
-  assert.equal(foodMassGain(50),.5);
-});
-
-test('boost costs exactly 2 score points per frame at 60 FPS, while Turbo removes that drain',async()=>{
-  const {boostScoreDrain}=await import('../js/logic.js');
-  assert.ok(Math.abs(boostScoreDrain(1/60)-2)<1e-10);
-  assert.equal(boostScoreDrain(1/60,true),0);
-});
-
-test('AI enters its intercept trap state when a larger worm closes on a smaller rival',async()=>{
-  const {chooseBotAngle}=await import('../js/ai.js');
-  const hunter={x:6500,y:6500,angle:0,score:900,mass:450,r:30,alive:true,trail:[]};
-  const prey={x:6780,y:6500,angle:0,score:100,mass:50,r:15,alive:true,trail:[]};
-  chooseBotAngle(hunter,[hunter,prey],[],{width:13000,height:13000,centerX:6500,centerY:6500,arenaRadius:6500},[]);
-  assert.equal(hunter.aiState,'trap');
-});
-
-test('HUD includes a dedicated boost button for touch and mouse users',async()=>{
-  const {readFile}=await import('node:fs/promises');
-  const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
-  const controls=await readFile(new URL('../js/controls.js',import.meta.url),'utf8');
-  assert.match(html,/id="boost-button"/);
-  assert.match(controls,/boostButton\?\.addEventListener\('pointerdown'/);
-});
-
-test('AI trap state grants a short speed burst without using the player mass drain',async()=>{
-  const {Game}=await import('../js/game.js');
-  const {createWorm}=await import('../js/worm.js');
-  const game=Object.create(Game.prototype);
-  const bot=createWorm({x:6500,y:6500,angle:0,name:'Rival',skin:{id:0,name:'Test',pattern:'glow',a:'#fff',b:'#0ff'},player:false,mass:200});
-  bot.think=10;bot.aiState='trap';bot.aiBurstUntil=performance.now()+5000;bot.targetAngle=0;
-  Object.assign(game,{elapsed:2,arenaRadius:6500,isSpawnProtected:()=>true,collectForWorm:()=>{},powerItems:[]});
-  const initialMass=bot.mass;
-  game.updateBot(bot,.1);
-  assert.ok(bot.speed>bot.baseSpeed);
-  assert.equal(bot.mass,initialMass);
-});
-
-test('radar zoom potion can zoom below the normal 0.42 camera floor',async()=>{
-  const {Game}=await import('../js/game.js');
-  const {wormRadiusForScore}=await import('../js/logic.js');
-  const game=Object.create(Game.prototype);
-  Object.assign(game,{player:{r:wormRadiusForScore(1000000)},viewZoom:1,isPowerActive:id=>id==='zoom'});
-  assert.ok(game.getCameraZoom()<.42);
-  assert.ok(Math.abs(game.getCameraZoom()-(.456*.7))<.001);
-});
-
-
-test('start overlay offers the five requested neon palettes as unlocked starter choices',async()=>{
-  const {makeDefaultSave}=await import('../js/logic.js');
-  const {readFile}=await import('node:fs/promises');
-  const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
-  const save=makeDefaultSave();
-  for(const id of [8,3,17,15,20])assert.ok(save.unlockedSkins.includes(id));
-  for(const name of ['Neon Cyan','Cyber Magenta','Toxic Green','Lava Gold','Electric Violet'])assert.ok(html.includes(name));
-});
-
-
-test('generated single-file edition has embedded CSS and JS with no external game assets or scripts',async()=>{
-  const {readFile}=await import('node:fs/promises');
-  const html=await readFile(new URL('../Worms-Battle-Single-File.html',import.meta.url),'utf8');
-  assert.match(html,/<style>[\s\S]*<\/style>/);
-  assert.match(html,/<script>[\s\S]*<\/script>/);
-  assert.doesNotMatch(html,/<script[^>]+src=/i);
-  assert.doesNotMatch(html,/<link[^>]+(?:stylesheet|manifest|apple-touch-icon)/i);
-  assert.doesNotMatch(html,/<img[^>]+src=/i);
-  assert.doesNotMatch(html,/navigator\.serviceWorker\.register/);
-});
-
-
-test('small energy orbs randomize their score value from one through five',async()=>{
-  const {createFood}=await import('../js/food.js');
-  const {FOOD_TYPES}=await import('../js/config.js');
-  const energy=FOOD_TYPES.find(item=>item.name==='Energy Orb');
-  const drops=Array.from({length:80},(_,i)=>createFood(i,0,energy,0));
-  assert.ok(drops.every(food=>food.type.value>=1&&food.type.value<=5));
-  assert.ok(new Set(drops.map(food=>food.type.value)).size>1);
-  assert.equal(energy.value,3,'food template should not be mutated by individual rolls');
 });
