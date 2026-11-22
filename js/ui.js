@@ -1,4 +1,4 @@
-import { MODES, SKINS, THEMES, POWERUPS } from './config.js';
+import { MODES, SKINS, THEMES, POWERUPS, WORLD } from './config.js';
 import { formatNumber, segmentsForMass, displayText, rewardedAdCompleted } from './logic.js';
 import { claimDaily, saveData, localDayKey } from './storage.js';
 import { MISSIONS } from './missions.js';
@@ -22,9 +22,15 @@ export class UI {
     $('continue-ad-button').addEventListener('click',()=>this.continueWithRewardedAd());
     $('gameover-menu').addEventListener('click',()=>{$('gameover-screen').classList.add('hidden');this.onQuit();});
     $('menu-sound').addEventListener('click',()=>{this.save.settings.sound=!this.save.settings.sound;this.audio.setEnabled(this.save.settings.sound);$('menu-sound').textContent=this.save.settings.sound?'🔊':'🔇';saveData(this.save);});
+    const nickname=$('start-nickname');nickname?.addEventListener('input',()=>{this.save.username=nickname.value.trim().slice(0,16)||'Player';this.refreshProfile();saveData(this.save);});
+    document.querySelectorAll('[data-start-skin]').forEach(button=>button.addEventListener('click',()=>{const id=Number(button.dataset.startSkin);if(!this.save.unlockedSkins.includes(id)){this.toast('Unlock this skin in the Wardrobe first.');return;}this.save.selectedSkin=id;this.refreshProfile();saveData(this.save);this.audio.click();}));
+    $('hud-sound-toggle')?.addEventListener('click',()=>{this.save.settings.sound=!this.save.settings.sound;this.audio.setEnabled(this.save.settings.sound);$('hud-sound-toggle').textContent=this.save.settings.sound?'🔊':'🔇';$('menu-sound').textContent=this.save.settings.sound?'🔊':'🔇';saveData(this.save);});
   }
   refreshProfile(){
     $('menu-username').textContent=this.save.username||'Player';$('menu-coins').textContent=formatNumber(this.save.coins);$('menu-level').textContent=`LEVEL ${1+Math.floor(this.save.xp/500)}`;
+    const nickname=$('start-nickname');if(nickname&&document.activeElement!==nickname)nickname.value=this.save.username||'Player';
+    document.querySelectorAll('[data-start-skin]').forEach(button=>{const skin=SKINS[Number(button.dataset.startSkin)];if(skin)button.style.setProperty('--quick-skin',`linear-gradient(135deg,${skin.a},${skin.b})`);button.classList.toggle('selected',Number(button.dataset.startSkin)===this.save.selectedSkin);button.disabled=Boolean(skin&&!this.save.unlockedSkins.includes(skin.id));});
+    const soundButton=$('hud-sound-toggle');if(soundButton)soundButton.textContent=this.save.settings.sound?'🔊':'🔇';$('menu-sound').textContent=this.save.settings.sound?'🔊':'🔇';
   }
   openPanel(title,html){$('panel-title').textContent=title;$('panel-content').innerHTML=html;$('panel-screen').classList.remove('hidden');this.wirePanel();}
   closePanel(){$('panel-screen').classList.add('hidden');}
@@ -149,7 +155,7 @@ export class UI {
     this.openPanel('ACHIEVEMENTS',`<div class="two-col">${cards}</div>`);
   }
   renderLeaderboard(){
-    const rivals=(this.game.bots||[]).filter(b=>b.alive).map(b=>({name:b.name,score:b.score,mass:b.mass,player:false}));if(this.game.player)rivals.push({name:this.save.username,score:this.game.totalScore,mass:this.game.player.mass,player:true});rivals.sort((a,b)=>b.mass-a.mass);
+    const rivals=(this.game.bots||[]).filter(b=>b.alive).map(b=>({name:b.name,score:b.score,mass:b.mass,player:false}));if(this.game.player)rivals.push({name:this.save.username,score:this.game.totalScore,mass:this.game.player.mass,player:true});rivals.sort((a,b)=>b.score-a.score);
     this.openPanel('ARENA LEADERBOARD',`<div class="info-card">${rivals.slice(0,20).map((r,i)=>`<div class="leader-row ${r.player?'me':''}" style="padding:7px 3px;border-bottom:1px solid #eef4ef"><span>${i+1}. ${r.player?'⭐ ':''}${r.name}</span><b>${formatNumber(r.score)}</b></div>`).join('')||'Play a match to populate the arena leaderboard.'}</div>`);
   }
   renderProfile(){
@@ -188,7 +194,7 @@ export class UI {
     const oldScroll=list.scrollTop;
     const entries=this.game.bots.filter(b=>b.alive).map(b=>({name:b.name,score:b.score||Math.round(b.mass*2),mass:b.mass,player:false,skin:b.skin}));
     entries.push({name:this.save.username||'Player',score:this.game.totalScore,mass:this.game.player.mass,player:true,skin:this.game.player.skin});
-    entries.sort((a,b)=>b.mass-a.mass);
+    entries.sort((a,b)=>b.score-a.score);
     $('live-player-count').textContent=String(entries.length);
     const fragment=document.createDocumentFragment();
     entries.forEach((entry,index)=>{
@@ -204,14 +210,14 @@ export class UI {
   }
   drawPowerupTimers(powerups){
     const powerHud=$('powerup-hud');
-    const active=Object.entries(powerups).map(([id,expiry])=>({id,expiry,seconds:getPowerupTimeLeft(expiry,this.game.elapsed)})).filter(item=>item.seconds>0);
+    const active=Object.entries(powerups).filter(([id])=>!id.endsWith('Value')).map(([id,expiry])=>({id,expiry,seconds:getPowerupTimeLeft(expiry,this.game.elapsed)})).filter(item=>item.seconds>0);
     powerHud.replaceChildren();
     for(const item of active){
       const power=POWERUPS.find(candidate=>candidate.id===item.id);
       if(!power)continue;
       const badge=document.createElement('div');badge.className='power-badge';badge.setAttribute('aria-label',`${displayText(power.name)}, ${item.seconds} seconds remaining`);
       const icon=document.createElement('span');icon.className='power-icon';icon.textContent=displayText(power.icon);
-      const name=document.createElement('b');name.className='power-name';name.textContent=displayText(power.name);
+      const name=document.createElement('b');name.className='power-name';name.textContent=item.id==='multiplier'?`SCORE ×${powerups.multiplierValue||2}`:displayText(power.name);
       const timer=document.createElement('strong');timer.className='power-time';timer.textContent=`${item.seconds}s`;
       const track=document.createElement('span');track.className='power-timer-track';
       const fill=document.createElement('i');fill.style.width=`${Math.max(0,Math.min(100,item.seconds/(power.duration/1000)*100))}%`;
@@ -220,12 +226,15 @@ export class UI {
   }
   drawMinimap(){
     const canvas=$('mini-map');if(!canvas||!this.game.player)return;const ctx=canvas.getContext('2d');const w=canvas.width,h=canvas.height;
-    ctx.clearRect(0,0,w,h);ctx.fillStyle='rgba(122,190,92,.96)';ctx.fillRect(0,0,w,h);
-    ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=1;for(let x=0;x<=w;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}for(let y=0;y<=h;y+=28){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
-    ctx.strokeStyle='rgba(255,240,120,.95)';ctx.lineWidth=2;ctx.strokeRect(1,1,w-2,h-2);
-    const px=this.game.player.x/3200*w,py=this.game.player.y/2400*h;
-    for(const bot of this.game.bots){if(!bot.alive)continue;const r=Math.max(1.8,Math.min(4,bot.r*.16));ctx.beginPath();ctx.arc(bot.x/3200*w,bot.y/2400*h,r,0,Math.PI*2);ctx.fillStyle=bot.skin.a;ctx.fill();}
-    ctx.beginPath();ctx.arc(px,py,4.3,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#087b51';ctx.stroke();
+    const cx=w/2,cy=h/2,r=Math.min(w,h)*.44,scale=r/WORLD.arenaRadius;
+    ctx.clearRect(0,0,w,h);ctx.fillStyle='#070c15';ctx.fillRect(0,0,w,h);
+    ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+    ctx.fillStyle='#0b111c';ctx.fillRect(cx-r,cy-r,r*2,r*2);
+    ctx.strokeStyle='rgba(38,70,98,.55)';ctx.lineWidth=1;for(let i=-4;i<=4;i++){ctx.beginPath();ctx.moveTo(cx+i*r/4,cy-r);ctx.lineTo(cx+i*r/4,cy+r);ctx.stroke();ctx.beginPath();ctx.moveTo(cx-r,cy+i*r/4);ctx.lineTo(cx+r,cy+i*r/4);ctx.stroke();}
+    const food=this.game.food||[];ctx.fillStyle='rgba(42,220,255,.42)';for(let i=0;i<food.length;i+=Math.max(1,Math.floor(food.length/160))){const f=food[i];ctx.fillRect(cx+(f.x-WORLD.centerX)*scale-1,cy+(f.y-WORLD.centerY)*scale-1,2,2);}
+    const leaders=[...(this.game.bots||[]).filter(b=>b.alive),this.game.player].filter(Boolean).sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,10);
+    for(const worm of leaders){ctx.beginPath();ctx.arc(cx+(worm.x-WORLD.centerX)*scale,cy+(worm.y-WORLD.centerY)*scale,worm===this.game.player?3.5:2.4,0,Math.PI*2);ctx.fillStyle=worm===this.game.player?'#fff':worm.skin?.a||'#70dfff';ctx.fill();}
+    ctx.restore();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='#ff315c';ctx.lineWidth=2;ctx.shadowColor='#ff315c';ctx.shadowBlur=9;ctx.stroke();ctx.shadowBlur=0;
   }
   showGameOver(summary){
     const reason=summary.reason==='victory'?'ARENA CHAMPION!':summary.reason==='time'?'TIME UP!':summary.reason==='wall'?'ARENA BOUNDARY!':'WORM DOWN!';$('gameover-title').textContent=reason;$('gameover-subtitle').textContent=summary.reason==='victory'?'You outlasted every rival worm!':'That was a wild run. Ready for another?';
