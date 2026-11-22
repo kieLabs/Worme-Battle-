@@ -96,5 +96,28 @@ body{position:fixed;inset:0}
   .gameover-actions .play-button,.gameover-actions .continue-ad-button,.gameover-actions .secondary-button{min-height:44px}
 }
 
+/* Home-screen PWA install action beside the player profile. */
+
+@media(max-width:760px){.mini-link{padding:7px 4px;font-size:9px}}
+
 /* Colour swatches are rendered as visual chips; hex strings are never displayed as labels. */
 .theme-preview{height:24px;border-radius:8px;border:3px solid #dceee3;margin:0 0 8px;background:#92c96b}.shop-theme-preview{height:42px;margin-bottom:10px}
+
+/* Compact quick-start controls on the home screen. */
+.quick-start{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px 12px;margin:10px 0 12px;padding:9px 11px;border:1px solid #dceee3;border-radius:13px;background:#f5fbf6}
+.quick-start label{grid-column:1/-1;font-size:8px;font-weight:1000;letter-spacing:1.4px;color:#72907f}
+.quick-start input{min-width:0;width:100%;border:1px solid #d3e7db;border-radius:9px;background:#fff;padding:8px 10px;color:#164e3b;font-weight:800;font-size:12px;outline:none}
+.quick-skins{display:flex;align-items:center;gap:7px}
+.quick-skins button{width:22px;height:22px;padding:0;border-radius:50%;border:2px solid rgba(25,65,48,.18);box-shadow:inset 0 1px 4px rgba(255,255,255,.35);background:var(--quick-skin);}
+.quick-skins button.selected{outline:2px solid #145b40;outline-offset:2px}
+.hud-sound-toggle{pointer-events:auto;position:absolute;left:max(9px,env(safe-area-inset-left));top:calc(max(7px,env(safe-area-inset-top)) + 158px);width:32px;height:30px;border-radius:9px;background:rgba(8,27,36,.86);border:1px solid rgba(126,229,255,.55);color:#eaffff;font-size:14px;z-index:5}
+@media(max-width:760px){.quick-start{margin:8px 0 10px;padding:8px}.hud-sound-toggle{top:calc(max(7px,env(safe-area-inset-top)) + 140px);left:7px}}
+
+/* Explicit touch boost control: neon button on the right side of the arena. */
+.boost-button{pointer-events:auto;position:absolute;right:max(20px,env(safe-area-inset-right));bottom:max(28px,env(safe-area-inset-bottom));z-index:9;width:82px;height:82px;border-radius:50%;border:2px solid #ff8bb6;background:radial-gradient(circle at 34% 28%,#ffb5d0 0 7%,#ff438b 40%,#5a103b 100%);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;box-shadow:0 0 12px #ff3f9b,0 0 28px #ff3f9b77,inset 0 0 16px #fff3;touch-action:none;user-select:none;-webkit-user-select:none}
+.boost-button b{font-size:29px;line-height:1.05;text-shadow:0 0 9px #fff}
+.boost-button span{font-size:9px;font-weight:1000;letter-spacing:1.4px}
+.boost-button.active{transform:scale(.93);filter:brightness(1.25);box-shadow:0 0 18px #ff3f9b,0 0 38px #ff3f9baa,inset 0 0 20px #fff5}
+@media(max-width:760px){.boost-button{right:max(16px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom));width:74px;height:74px}.boost-button b{font-size:26px}}
+
+@media(min-width:761px){.boost-button{display:none}}

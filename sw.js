@@ -1,7 +1,7 @@
-const CACHE_NAME = 'worms-battle-gamerkie-v5';
+const CACHE_NAME = 'worms-battle-gamerkie-v6';
 const APP_SHELL = [
   './', './index.html', './style.css', './manifest.webmanifest',
-  './js/config.js', './js/logic.js', './js/storage.js', './js/worm.js',
+  './js/config.js', './js/logic.js', './js/spatial.js', './js/storage.js', './js/worm.js',
   './js/camera.js', './js/ai.js', './js/food.js', './js/collision.js',
   './js/powerups.js', './js/particles.js', './js/missions.js',
   './js/achievements.js', './js/shop.js', './js/game.js', './js/audio.js',
