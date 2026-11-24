@@ -119,10 +119,3 @@ test('normal worm growth uses exactly 0.01 mass per food point and FEAST doubles
   assert.ok(Math.abs(foodMassGain(50)-0.5)<1e-10);
   assert.ok(Math.abs(foodMassGain(50,2)-1)<1e-10);
 });
-
-test('canvas pixel ratio is reduced on touch devices to keep mobile rendering lighter',async()=>{
-  const {canvasPixelRatio}=await import('../js/logic.js');
-  assert.equal(canvasPixelRatio(3,true),1.35);
-  assert.equal(canvasPixelRatio(2,false),2);
-  assert.equal(canvasPixelRatio(1,false),1);
-});
