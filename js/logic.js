@@ -1,7 +1,4 @@
 export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-// Lower backing-store resolution on touch devices to reduce canvas fill and glow cost.
-export const canvasPixelRatio = (devicePixelRatio = 1, coarsePointer = false) =>
-  Math.min(Math.max(0.8, Number(devicePixelRatio) || 1), coarsePointer ? 1.35 : 2);
 export function displayText(value) {
   const source=String(value??'').replace(/<[^>]*>/g,'');
   return source.replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos);/gi,(match,entity)=>{
@@ -36,7 +33,7 @@ export function weightedPick(items, rng = Math.random) {
 }
 export function makeDefaultSave() {
   return {
-    version: 1, username: 'Player', coins: 250, xp: 0, selectedSkin: 8, unlockedSkins: [0,1,2,3,8,17,15,20],
+    version: 1, username: 'Player', coins: 250, xp: 0, selectedSkin: 0, unlockedSkins: [0,1,2,3],
     selectedTheme: 'meadow', unlockedThemes: ['meadow'], gamesPlayed: 0, totalFood: 0, totalKills: 0,
     bestScore: 0, longestWorm: 0, bestTime: 0, totalScore: 0, missions: {}, achievements: [],
     lastDailyClaim: '', dailyStreak: 0, settings: {sound:true,music:true,quality:'auto',joystick:true},
@@ -57,11 +54,3 @@ export function trailFoodPositions(worm, count) {
   }
   return positions;
 }
-
-// Score-driven arcade growth requested for Worms Battle. The mass-based economy
-// remains separate so the existing 0.01 mass-per-point balance is preserved.
-export const segmentsForScore = score => Math.max(15, Math.floor(15 + Math.pow(Math.max(0, Number(score) || 0), 0.58) * 1.4));
-export const wormRadiusForScore = score => Math.min(48, 14 + Math.pow(Math.max(0, Number(score) || 0), 0.32) * 0.65);
-export const autoZoomForRadius = radius => Math.max(0.42, 1 - (Math.max(14, Number(radius) || 14) - 14) * 0.016);
-
-export const boostScoreDrain = (deltaSeconds, turboActive = false) => turboActive ? 0 : Math.max(0, Number(deltaSeconds) || 0) * 120;

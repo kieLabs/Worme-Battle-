@@ -1,8 +1,6 @@
-export const WORLD = { width: 13000, height: 13000, centerX: 6500, centerY: 6500, arenaRadius: 6500 };
+export const WORLD = { width: 3200, height: 2400 };
 export const FOOD_TYPES = [
-  {name:'Energy Orb', emoji:'✦', color:'#32eaff', value:3, weight:24},
-  {name:'Cheese', emoji:'🧀', color:'#ffd34f', value:22, weight:7},
-  {name:'Apple', emoji:'🍎', color:'#f04452', value:18, weight:18},
+  {name:'Apple', emoji:'🍎', color:'#f04452', value:12, weight:18},
   {name:'Green Apple', emoji:'🍏', color:'#7acb45', value:14, weight:12},
   {name:'Banana', emoji:'🍌', color:'#ffd447', value:18, weight:10},
   {name:'Strawberry', emoji:'🍓', color:'#ed4165', value:16, weight:10},
@@ -20,13 +18,11 @@ export const FOOD_TYPES = [
   {name:'Golden', emoji:'⭐', color:'#ffd335', value:80, weight:1}
 ];
 export const POWERUPS = [
-  {id:'magnet', name:'MAGNET', icon:'🧲', color:'#c45cff', duration:15000, description:'Pulls food within 320px toward your mouth.'},
+  {id:'magnet', name:'MAGNET', icon:'🧲', color:'#58baff', duration:9000, description:'Pulls nearby food toward you.'},
   {id:'speed', name:'SPEED', icon:'⚡', color:'#fff064', duration:7000, description:'Move faster for a short time.'},
-  {id:'double', name:'2X SCORE', icon:'✖️2', color:'#f5a5ff', duration:15000, description:'Double points from food.'},
-  {id:'multiplier', name:'2X / 5X MULTIPLIER', icon:'✕5', color:'#ffc857', duration:15000, description:'Multiply food score by 2x or 5x.'},
-  {id:'turbo', name:'TURBO', icon:'⚡', color:'#7dff65', duration:15000, description:'40% faster movement and sharper steering, with no boost drain.'},
+  {id:'double', name:'2X SCORE', icon:'✖️2', color:'#f5a5ff', duration:12000, description:'Double points from food.'},
   {id:'food', name:'FEAST', icon:'🍉', color:'#77e38d', duration:10000, description:'Food gives extra growth.'},
-  {id:'zoom', name:'ZOOM / RADAR', icon:'🔭', color:'#39aaff', duration:15000, description:'Temporarily zoom out 30% for a wider view.'},
+  {id:'zoom', name:'ZOOM OUT', icon:'🔭', color:'#86baff', duration:9000, description:'Pull the camera back for a wider arena view.'},
   {id:'coin', name:'COIN MAGNET', icon:'🪙', color:'#ffcc55', duration:10000, description:'Collect bonus coins nearby.'},
   {id:'shield', name:'SHIELD', icon:'🛡️', color:'#75dcff', duration:14000, description:'Blocks one body collision.'},
   {id:'super', name:'SUPER BOOST', icon:'🚀', color:'#ff9872', duration:5000, description:'A powerful speed burst.'},
@@ -47,7 +43,7 @@ export const MODES = [
 ];
 export const BOT_NAMES = ['Alex','Sophia','Ethan','Olivia','Liam','Emma','Noah','Ava','Lucas','Mia','Mason','Isabella','Leo','Amelia','James','Harper','Benjamin','Evelyn','Elijah','Charlotte','Henry','Abigail','Daniel','Emily','Jack','Ella','Logan','Scarlett','Aiden','Grace','Matthew','Chloe','Owen','Lily','Samuel','Aria','Sebastian','Nora','David','Zoe','Joseph','Layla','Wyatt','Riley','Julian','Hannah','Gabriel','Lucy','Isaac','Stella','Caleb','Maya','Nathan','Ellie','Ryan','Sofia','Aaron','Leah','Dylan','Aurora'];
 export const THEMES = [
-  {id:'meadow',name:'Cyber Neon',bg:'#0b0e14',grid:'#1a2333',price:0},
+  {id:'meadow',name:'Meadow',bg:'#92c96b',grid:'#a8d980',price:0},
   {id:'ocean',name:'Ocean Floor',bg:'#469eaa',grid:'#62b5bd',price:450},
   {id:'night',name:'Moonlight',bg:'#263b58',grid:'#344d6e',price:700},
   {id:'candyland',name:'Candyland',bg:'#d58bbd',grid:'#e7a6d0',price:900},
